@@ -1,0 +1,2 @@
+SRCS_COMMON = main.c
+SOURCES += $(addprefix src/common/, $(SRCS_COMMON))

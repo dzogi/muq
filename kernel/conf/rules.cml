@@ -1,0 +1,36 @@
+# muQ Configuration Rules
+
+prefix "CONFIG_"
+
+start main
+
+
+symbols
+
+arch 'Architecture'
+ARCH_X86 'Intel x86'
+ARCH_ARM 'ARM'
+hardware 'Hardware'
+kernel 'Kernel'
+KERNEL_NAME 'Kernel Name'
+DEBUG_SYMBOLS 'Debugging symbols'
+
+main 'muq Kernel configuration file'
+
+menu hardware
+	arch
+
+choices arch
+	ARCH_X86
+	ARCH_ARM
+	default ARCH_X86
+
+menu kernel
+	KERNEL_NAME$
+	DEBUG_SYMBOLS
+
+	default KERNEL_NAME from "muQ 0.1"
+
+menu main
+	hardware
+	kernel

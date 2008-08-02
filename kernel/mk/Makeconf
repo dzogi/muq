@@ -1,0 +1,100 @@
+# BSD License
+
+# vpath hackery
+vpath %.c $(SRCDIR)
+vpath %.S $(SRCDIR)
+
+-include $(BUILDDIR)/config/.config
+
+# utilities
+ECHO = echo
+ECHO_MSG= $(ECHO) -e ===\\t
+RM_F = rm -f
+
+# no tool prefix for now
+TOOL_PREFIX =
+
+# compiler, linker, etc.
+CC = $(TOOLPREFIX)gcc
+LD = $(TOOLPREFIX)ld
+AR = $(TOOL_PREFIX)ar
+CPP = $(TOOL_PREFIX)cpp # preprocessor
+
+INCLUDES += $(BUILDDIR)/include $(SRCDIR)/include
+
+DEFINES += __ARCH__=$(ARCH)
+
+# Forward to config/Makefile
+.PHONY: menuconfig
+menuconfig:
+	@$(MAKE) -C $(BUILDDIR)/config -f $(SRCDIR)/conf/Makefile $@
+
+INCLUDES += $(BUILDDIR)/include $(SRCDIR)/src $(SRCDIR)/include/common $(SRCDIR)/include/$(ARCH)
+
+# preprocessor flags
+PPFLAGS += -nostdinc $(addprefix -I, $(INCLUDES)) $(addprefix -D, $(DEFINES))\
+	   -imacros $(BUILDDIR)/config/config.h
+
+# C preprocessor flags
+CPPFLAGS += $(PPFLAGS) -include $(SRCDIR)/include/arch-${ARCH}/types.h
+
+# assembler preprocessor flags
+APPFLAGS += $(PPFLAGS) -D__ASSEMBLY__
+
+CFLAGS += -fno-builtin -fomit-frame-pointer -Wall -pedantic\
+	   -ffreestanding $(CFLAGS_$(ARCH))
+
+ifeq ("$(CONFIG_DEBUG_SYMBOLS)","y")
+CCFLAGS += -g
+endif
+
+ASMFLAGS += $(ASMFLAGS_$(ARCH))
+LDFLAGS += -static -O $(LDFLAGS_$(ARCH))
+LDSCRIPT = $(SRCDIR)/src/linkerscripts/$(ARCH)/linker.lds
+
+%.o: %.c
+	@$(ECHO_MSG) \(CC\) $@
+	@if [ ! -d $(dir $@) ]; then mkdir -p $(dir $@); fi
+	@$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+
+%.o: %.S
+	@$(ECHO_MSG) \(ASM\) $@
+	@if [ ! -d $(dir $@) ]; then mkdir -p $(dir $@); fi
+	@$(CC) $(APPFLAGS) $(ASMFLAGS) -c $< -o $@
+
+# source directories (relative to SRCDIR/src)
+SRCSRC += common arch/$(ARCH) glue/$(ARCH)
+
+# All Makeconfs should look like SOURCES += ...
+-include $(SRCDIR)/mk/Makeconf.$(ARCH)
+-include $(addprefix $(SRCDIR)/src/, $(addsuffix /Makeconf, $(SRCSRC)))
+
+OBJS =  $(patsubst %.c, %.o,\
+        $(patsubst %.S, %.o,\
+	$(patsubst $(SRCDIR)%, $(BUILDDIR)%, $(SOURCES))))
+
+$(ARCH)-kernel: $(BUILDDIR)/Makeconf.local $(OBJS) $(SRCDIR)/mk/Makeconf $(LDSCRIPT)
+	@$(ECHO_MSG) Linking $@
+	@$(LD) $(LDFLAGS) -T $(LDSCRIPT) -o $@ $(OBJS)
+
+clean::
+	@$(RM_F) `find . -name "*.[oasi]" -o -name "*.ii"`
+	@$(RM_F) $(ARCH)-kernel Makeconf.depend
+
+Makeconf.depend: $(SOURCES) $(BUILDDIR)/Makeconf.local $(wildcard $(addprefix $(SRCDIR)/, $(addsuffix /Makeconf, $(SRCSRC))))
+	@$(RM_F) $@
+	@for f in $(SOURCES); do \
+		case $$f in \
+		*.S) FLAGS="$(APPFLAGS)"; \
+		;; \
+		*) FLAGS="$(CPPFLAGS)"; \
+		;; \
+		esac; \
+		$(CPP) $$FLAGS -w -M -MG $(addprefix $(SRCDIR)/, $$f) | \
+		perl -pe 's/^(.*):[ \t]+\\\n/1:/g' | \
+		python $(SRCDIR)/scripts/create_depends.py $(SRCDIR) >> $@;\
+		done;
+
+ifeq "$(filter clean %config, $(MAKECMDGOALS))" ""
+-include Makeconf.depend
+endif

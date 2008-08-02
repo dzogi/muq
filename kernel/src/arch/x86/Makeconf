@@ -1,0 +1,2 @@
+SRCS_ARC_X86 = timer.c head.S mboot.S
+SOURCES += $(addprefix src/arch/x86/, $(SRCS_ARC_X86))

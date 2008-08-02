@@ -1,0 +1,5 @@
+ARCH =
+CPU =
+PLATFORM =
+
+BUILDDIR = $(CURDIR)
