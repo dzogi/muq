@@ -29,7 +29,7 @@ DEFINES += __ARCH__=$(ARCH)
 menuconfig:
 	@$(MAKE) -C $(BUILDDIR)/config -f $(SRCDIR)/conf/Makefile $@
 
-INCLUDES += $(BUILDDIR)/include $(SRCDIR)/src $(SRCDIR)/include/common $(SRCDIR)/include/$(ARCH)
+INCLUDES += $(BUILDDIR)/include $(SRCDIR)/src $(SRCDIR)/include/common
 
 # preprocessor flags
 PPFLAGS += -nostdinc $(addprefix -I, $(INCLUDES)) $(addprefix -D, $(DEFINES))\
@@ -45,11 +45,11 @@ CFLAGS += -fno-builtin -fomit-frame-pointer -Wall -pedantic\
 	   -ffreestanding $(CFLAGS_$(ARCH))
 
 ifeq ("$(CONFIG_DEBUG_SYMBOLS)","y")
-CCFLAGS += -g
+CFLAGS += -g
 endif
 
 ASMFLAGS += $(ASMFLAGS_$(ARCH))
-LDFLAGS += -static -O $(LDFLAGS_$(ARCH))
+LDFLAGS += -static $(LDFLAGS_$(ARCH))
 LDSCRIPT = $(SRCDIR)/src/linkerscripts/$(ARCH)/linker.lds
 
 %.o: %.c
@@ -75,7 +75,7 @@ OBJS =  $(patsubst %.c, %.o,\
 
 $(ARCH)-kernel: $(BUILDDIR)/Makeconf.local $(OBJS) $(SRCDIR)/mk/Makeconf $(LDSCRIPT)
 	@$(ECHO_MSG) Linking $@
-	@$(LD) $(LDFLAGS) -T $(LDSCRIPT) -o $@ $(OBJS)
+	@$(LD) --script=$(LDSCRIPT) $(LDFLAGS) -o $@ $(OBJS)
 
 clean::
 	@$(RM_F) `find . -name "*.[oasi]" -o -name "*.ii"`

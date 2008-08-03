@@ -2,28 +2,75 @@ OUTPUT_FORMAT("elf32-i386")
 OUTPUT_ARCH(i386)
 ENTRY(start_32)
 virt_addr = 0xE0000000; /* 3 gigs */
-phys_addr = 0X00100000; /* 1 meg */
+phys_addr = 0x00100000; /* 1 meg */
 
 SECTIONS
 {
 	. = virt_addr + phys_addr + SIZEOF_HEADERS;
-	.mboot : AT(ADDR(.mboot) - virt_addr) { *(.mboot) }
-	.init32 : AT(ADDR(.init32) - virt_addr) { *(.init32) }
 
+	_kstart = .;
 	_kcode = .;
-  	.text : AT(ADDR(.text) - virt_addr) { *(.text) }
+  	.text ALIGN(4K) : AT(ADDR(.text) - virt_addr) {
+		*(.mboot)
+		*(.text) 
+	}
+	_kcode_end = .;
 
- 	. = ALIGN(4K);
- 	.rodata : AT(ADDR(.rodata) - virt_addr) { *(.rodata) }
+	_krodata = .;
+ 	.rodata ALIGN(4K) : AT(ADDR(.rodata) - virt_addr) {
+		*(.rodata)
+	}
+	_krodata_end = .;
+	
+	_kdata = .;
+ 	.data ALIGN(4K) : AT(ADDR(.data) - virt_addr) {
+		_kdata = .;
+		*(.data)
+	}
+	_kdata_end = .;
 
-	. = ALIGN(4K);
-  	_kdata = .;
- 	.data : AT(ADDR(.data) - virt_addr) { *(.data) }
-
- 	. = ALIGN(4K);
- 	_kbss = .;
- 	.bss : AT(ADDR(.bss) - virt_addr) { *(COMMON) *(.bss) }
-
- 	_kend = .;
+	_kbss = .;
+ 	.bss ALIGN(4K) : AT(ADDR(.bss) - virt_addr) { 
+		_kbss = .;
+		*(.bss)
+		*(COMMON)
+	}
+	_kbss_end = .;
+	
+	 /* Stabs debugging sections.  */
+	.stab          0 : { *(.stab) }
+	.stabstr       0 : { *(.stabstr) }
+	.stab.excl     0 : { *(.stab.excl) }
+	.stab.exclstr  0 : { *(.stab.exclstr) }
+	.stab.index    0 : { *(.stab.index) }
+	.stab.indexstr 0 : { *(.stab.indexstr) }
+	.comment       0 : { *(.comment) }
+	/* DWARF debug sections.
+	Symbols in the DWARF debugging sections are relative to the beginning
+	of the section so we begin them at 0.  */
+	/* DWARF 1 */
+	.debug          0 : { *(.debug) }
+	.line           0 : { *(.line) }
+	/* GNU DWARF 1 extensions */
+	.debug_srcinfo  0 : { *(.debug_srcinfo) }
+	.debug_sfnames  0 : { *(.debug_sfnames) }
+	/* DWARF 1.1 and DWARF 2 */
+	.debug_aranges  0 : { *(.debug_aranges) }
+	.debug_pubnames 0 : { *(.debug_pubnames) }
+	/* DWARF 2 */
+	.debug_info     0 : { *(.debug_info .gnu.linkonce.wi.*) }
+	.debug_abbrev   0 : { *(.debug_abbrev) }
+	.debug_line     0 : { *(.debug_line) }
+	.debug_frame    0 : { *(.debug_frame) }
+	.debug_str      0 : { *(.debug_str) }
+	.debug_loc      0 : { *(.debug_loc) }
+	.debug_macinfo  0 : { *(.debug_macinfo) }
+	/* SGI/MIPS DWARF 2 extensions */
+	.debug_weaknames 0 : { *(.debug_weaknames) }
+	.debug_funcnames 0 : { *(.debug_funcnames) }
+	.debug_typenames 0 : { *(.debug_typenames) }
+	.debug_varnames  0 : { *(.debug_varnames) }
+	
+	_kend = ALIGN(4K);
 }
 
