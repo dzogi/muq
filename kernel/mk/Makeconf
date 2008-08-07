@@ -63,7 +63,7 @@ LDSCRIPT = $(SRCDIR)/src/linkerscripts/$(ARCH)/linker.lds
 	@$(CC) $(APPFLAGS) $(ASMFLAGS) -c $< -o $@
 
 # source directories (relative to SRCDIR/src)
-SRCSRC += common arch/$(ARCH) glue/$(ARCH)
+SRCSRC += common arch/$(ARCH) libs
 
 # All Makeconfs should look like SOURCES += ...
 -include $(SRCDIR)/mk/Makeconf.$(ARCH)

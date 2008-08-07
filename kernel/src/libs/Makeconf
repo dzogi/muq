@@ -1,0 +1,2 @@
+SRCS_LIBS = string.c
+SOURCES += $(addprefix src/libs/, $(SRCS_LIBS))

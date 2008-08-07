@@ -36,6 +36,7 @@ SECTIONS
 		*(COMMON)
 	}
 	_kbss_end = .;
+	_kend = .;
 	
 	 /* Stabs debugging sections.  */
 	.stab          0 : { *(.stab) }
@@ -70,7 +71,5 @@ SECTIONS
 	.debug_funcnames 0 : { *(.debug_funcnames) }
 	.debug_typenames 0 : { *(.debug_typenames) }
 	.debug_varnames  0 : { *(.debug_varnames) }
-	
-	_kend = ALIGN(4K);
 }
 

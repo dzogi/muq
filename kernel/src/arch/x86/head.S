@@ -3,7 +3,7 @@
 .global start_32
 .global gdt
 
-.extern main
+.extern arch_init
 
 #define GFX_BUFFER 0xB8000
 #define OFFSET 0xE0000000
@@ -64,7 +64,9 @@ lp2:
 	movl %eax,%cr0
 	ljmp $0x08, $paging_enabled
 paging_enabled:
-	jmp kernel_main
+	pushl %ebx
+	pushl $0xDEADBEEF /* return address, never returns */
+	jmp arch_init
 
 .section .data
 _welcome_str: .asciz "Welcome to muQ v0.1"

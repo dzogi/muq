@@ -49,7 +49,7 @@ else
 .PHONY: create_symlink
 # We create this symlink so we can all arch-specific headers are under /
 create_symlink:
-	@ln -fs $(SRCDIR)/include/arch-$(ARCH) $(BUILDDIR)/include/arch
+	@ln -fsn $(SRCDIR)/include/arch-$(ARCH) $(BUILDDIR)/include/arch
 
 all: create_symlink $(ARCH)-kernel
 	@echo "Done."

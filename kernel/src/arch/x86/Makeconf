@@ -1,2 +1,3 @@
-SRCS_ARC_X86 = mboot.S head.S timer.c
+SRCS_ARC_X86 = mboot.S head.S timer.c video.c arch_interrupts.c \
+               physallocator.c init.c
 SOURCES += $(addprefix src/arch/x86/, $(SRCS_ARC_X86))

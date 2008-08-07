@@ -1,2 +1,2 @@
-SRCS_COMMON = main.c
+SRCS_COMMON = main.c interrupts.c mm.c
 SOURCES += $(addprefix src/common/, $(SRCS_COMMON))

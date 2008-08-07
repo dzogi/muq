@@ -1,9 +1,21 @@
+#include <string.h>
+#include <mm.h>
+#include <interrupts.h>
+#include <multiboot.h>
+
+#include <arch/video.h>
+
 void __attribute__((noreturn))
-kernel_main(void)
+kernel_main(struct multiboot_info *info)
 {
-	u16_t* video_buf = (u16_t*) 0xB8000;
+	video_init();
+	mm_init(info);
+	int_init();
+	
+	puts("Welcome to muq");
+	
 	while(1) {
-		(*video_buf)++;
+		
 	}
 }
 
